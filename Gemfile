@@ -1,26 +1,54 @@
-source 'http://rubygems.org'
+if RUBY_VERSION =~ /1.9/
+  Encoding.default_external = Encoding::UTF_8
+  Encoding.default_internal = Encoding::UTF_8
+end
 
-gem 'rails', '3.0.9'
+source 'https://rubygems.org'
 
-gem 'simple_form', '1.5.1'
-gem 'jquery-rails', '1.0.14'
+gem 'rails', '~> 4.2.0'
+
+gem 'ey_config'
+gem 'rails_autolink'
+gem 'simple_form'
+
+# Assets
+gem 'jquery-rails'
+gem 'sass-rails'
+gem 'coffee-rails'
+gem 'uglifier'
 
 platform :ruby do
-#  gem 'mysql2', '~> 0.2.7'
-  gem 'sqlite3' 
+  gem 'mysql2'
+  gem 'pg'
+  gem 'sqlite3'
+
+  gem 'newrelic_rpm'
   gem 'unicorn'
+  gem 'puma'
+  gem 'json'
+  gem 'minitest'
+  gem 'psych'
+  gem 'racc'
 end
 
 platforms :jruby do
-  gem 'activerecord-jdbc-adapter'
-  gem 'jruby-openssl'
+  ar_jdbc_version = '~> 1.3'
+  gem 'activerecord-jdbc-adapter', ar_jdbc_version
+  gem 'activerecord-jdbcmysql-adapter', ar_jdbc_version
+  gem 'activerecord-jdbcpostgresql-adapter', ar_jdbc_version
+  gem 'activerecord-jdbcsqlite3-adapter', ar_jdbc_version
   gem 'jdbc-mysql', :require => false
   gem 'jdbc-sqlite3', :require => false
+  gem 'jdbc-postgres', :require => false
+
+  gem 'jruby-openssl'
   gem 'trinidad'
 end
 
-
-
+platform :rbx do
+  gem 'rubysl'
+  gem 'rubysl-test-unit', :require => false
+end
 
 # Bundle gems for the local environment. Make sure to
 # put test-only gems in this group so their generators
