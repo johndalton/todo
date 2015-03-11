@@ -1,50 +1,66 @@
 class TasksController < ApplicationController
-
-
   def index
     @todo   = Task.where(:done => false)
     @task   = Task.new
     @lists  = List.all
     @list   = List.new
-    
+
     respond_to do |format|
       format.html
+      format.json do
+        render :json => {:tasks => Task.all.map(&:to_json) }
+      end
     end
   end
-
 
   def create
-    @task = Task.new(params[:task])
+    @list = List.find(params[:list_id])
+    raw_params = params[:task].is_a?(String) ? JSON.parse(params[:task]) : params[:task]
+    task_params = ActionController::Parameters.new(raw_params)
+    @task = @list.tasks.new(task_params.permit(:name))
     if @task.save
-        flash[:notice] = "Your task was created."
+      status = "success"
+      flash[:notice] = "Your task was created."
     else
-        flash[:alert] = "There was an error creating your task."
+      status = "failure"
+      flash[:alert] = "There was an error creating your task."
     end
-    redirect_to(tasks_url(:list => params[:task][:list_id]))
+    respond_to do |format|
+      format.html do
+        redirect_to(list_tasks_url(@list))
+      end
+      format.json do
+        render :json => {:status => status, :task => @task.to_json}
+      end
+    end
   end
-  
 
   def update
-    @task = Task.find(params[:id])
+    @list = List.find(params[:list_id])
+    @task = @list.tasks.find(params[:id])
 
     respond_to do |format|
-      if @task.update_attributes(params[:task])
-        format.html { redirect_to( tasks_url(:list => @task.list.id), :notice => 'Task was successfully updated.') }
+      if @task.update_attributes(task_attributes)
+        format.html { redirect_to( list_tasks_url(@list), :notice => 'Task was successfully updated.') }
       else
         format.html { render :action => "edit" }
       end
     end
   end
 
-
   def destroy
+    @list = List.find(params[:list_id])
     @task = Task.find(params[:id])
     @task.destroy
 
     respond_to do |format|
-      format.html { redirect_to(tasks_url(:list => @task.list_id)) }
+      format.html { redirect_to(list_tasks_url(@list)) }
     end
   end
-  
- 
+
+  private
+
+  def task_attributes
+    params.require(:task).permit(:name, :done, :list_id)
+  end
 end
